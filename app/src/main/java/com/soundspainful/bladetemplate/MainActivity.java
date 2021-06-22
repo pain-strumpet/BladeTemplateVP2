@@ -6,6 +6,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import androidx.viewpager2.widget.ViewPager2;
+
 import com.vuzix.hud.actionmenu.ActionMenuActivity;
 
 import java.io.File;
@@ -13,7 +15,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 
 public class MainActivity extends ActionMenuActivity {
@@ -22,22 +27,28 @@ public class MainActivity extends ActionMenuActivity {
     private MenuItem VuzixMenuItem;
     private MenuItem BladeMenuItem;
 
+    private ViewPagerAdapter viewPagerAdapter;
+
+    ArrayList<RecyclerItem> itemList = new ArrayList<>();
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        /* This is a Blade Template
-        *  The initial version is from the Sample App
-        *
-        * This is a Blade Template -- File Spawner
-        * When this app is activated, it will check
-        * the existing file list for content, then
-        * fill the directory to twenty mock files.*/
-
         mockFiles();
 
+        mockList();
+
+        viewPagerAdapter = new ViewPagerAdapter(itemList);
+
+        ViewPager2 viewPager2 = findViewById(R.id.mainViewPager);
+        viewPager2.setAdapter(viewPagerAdapter);
+
     }
+
+
 
     private void mockFiles() {
         String path = getExternalFilesDir(null).toString();
@@ -63,6 +74,23 @@ public class MainActivity extends ActionMenuActivity {
             }
         }
     }
+
+    private void mockList() {
+        String path = getExternalFilesDir(null).toString();
+        File directory = new File(path);
+        File[] files = directory.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            RecyclerItem recItem = new RecyclerItem(path, files[i].getName());
+            itemList.add(recItem);
+        }
+        Collections.sort(itemList, new Comparator<RecyclerItem>() {
+            @Override
+            public int compare(RecyclerItem o1, RecyclerItem o2) {
+                return o1.getItemName().compareTo(o2.getItemName());
+            }
+        });
+    }
+
 
     @Override
     protected boolean onCreateActionMenu(Menu menu) {
